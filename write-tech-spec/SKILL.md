@@ -63,6 +63,34 @@ Optional sections — include only when they add signal. Omit the heading entire
 - **Risks and mitigations** — Include when there are real failure modes, regressions, migration concerns, or rollout hazards worth calling out.
 - **Follow-ups** — Include when there is deferred cleanup or future work worth naming.
 
+## Frontmatter
+
+Every `TECH.md` must begin with YAML frontmatter that tracks its implementation lifecycle:
+
+```yaml
+---
+status: draft          # draft | review | implemented | drifted
+implemented: false     # set to true once the feature ships
+implemented_at:        # ISO date (YYYY-MM-DD) when marked implemented, e.g. 2026-07-14
+drift: []              # list of post-implementation changes; each entry: {date, description}
+---
+```
+
+- Set `status: draft` when first created.
+- Set `status: review` when the spec is circulated for sign-off but has not yet shipped.
+- Set `status: implemented`, `implemented: true`, and `implemented_at` to today's ISO date when the feature ships.
+- **When updating a spec that already has `implemented: true`:** stop, warn the user that the spec is marked as implemented, and require them to explicitly describe what has drifted before making any edits. Record each acknowledged change as an entry in `drift` (with an ISO date and short description) and set `status: drifted`. Never silently edit an implemented spec.
+
+Example of a post-implementation drift entry:
+
+```yaml
+drift:
+  - date: 2026-08-02
+    description: Switched persistence layer from SQLite to Postgres after load testing.
+  - date: 2026-09-10
+    description: Parallelization strategy dropped — subtasks were too tightly coupled.
+```
+
 ## Length heuristic
 
 Right-size the spec to the feature:
@@ -85,6 +113,11 @@ If Context and Proposed changes end up describing the same files and state from 
 ## Keep the spec current
 
 Approved specs may ship in the same PR as the implementation. Update `TECH.md` in the same PR when module boundaries, implementation sequencing, risks, validation strategy, or rollout assumptions change. The checked-in spec should describe the implementation that actually ships.
+
+Before editing any existing `TECH.md`, read its frontmatter:
+
+- If `implemented: false` — edit freely; update `status` as the spec progresses toward review and shipping.
+- If `implemented: true` — **do not edit silently.** Warn the user that the spec is already marked implemented, explain that any change represents drift from the shipped implementation, and ask them to confirm and describe what changed. Only proceed once they acknowledge the drift. Then append the acknowledged changes to the `drift` list and set `status: drifted`.
 
 For large features, the implementer may optionally keep a `DECISIONS.md` file summarizing concrete decisions. Offer it when it would help future agents; otherwise skip it.
 

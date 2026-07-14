@@ -22,6 +22,9 @@ Before using this skill:
 - confirm that `PRODUCT.md` exists
 - confirm that `TECH.md` exists when the feature warranted one
 - confirm that the relevant specs have been reviewed and approved enough to start implementation
+- read the frontmatter of both specs and check `status` and `implemented`:
+  - `implemented: false` — proceed normally.
+  - `implemented: true` — **stop and warn the user.** The spec is already marked as shipped. Ask whether they intend to re-implement, extend, or fix a regression, and confirm before continuing. Any spec edits that follow must use the drift protocol (see step 4).
 
 ## Workflow
 
@@ -65,6 +68,8 @@ In particular:
 - update `TECH.md` when architecture, sequencing, module boundaries, or validation strategy change
 - keep those updates in the same PR as the corresponding code changes
 
+If either spec was already marked `implemented: true` before this implementation pass began (e.g. you are fixing a regression or extending an existing feature), follow the drift protocol: do not edit silently — append each change to the `drift` list with today's ISO date and a short description, and set `status: drifted`.
+
 The PR should describe the feature that actually ships, not just the initial draft of the specs.
 
 ### 5. Verify against the specs
@@ -75,6 +80,18 @@ Prefer:
 
 - unit tests and regression coverage that follow the repository's local testing conventions
 - integration or end-to-end tests for important user flows
+
+### 6. Mark the specs as implemented
+
+Once verification passes and the feature is ready to ship (or has shipped), update the frontmatter of both `PRODUCT.md` and `TECH.md`:
+
+```yaml
+status: implemented
+implemented: true
+implemented_at: <today's ISO date, e.g. 2026-07-14>
+```
+
+Include these frontmatter updates in the same PR as the implementation so the repository always reflects the actual state of the feature.
 
 ## Best Practices
 

@@ -62,6 +62,34 @@ Optional sections — include only when they add signal beyond the core. Omit th
 
 Do not include Validation, Success criteria, or Testing sections. Validation and test planning live in the companion `TECH.md` (produced by `write-tech-spec`). Write Behavior as numbered invariants that are testable on their own — the tech spec can reference them directly.
 
+## Frontmatter
+
+Every `PRODUCT.md` must begin with YAML frontmatter that tracks its implementation lifecycle:
+
+```yaml
+---
+status: draft          # draft | review | implemented | drifted
+implemented: false     # set to true once the feature ships
+implemented_at:        # ISO date (YYYY-MM-DD) when marked implemented, e.g. 2026-07-14
+drift: []              # list of post-implementation changes; each entry: {date, description}
+---
+```
+
+- Set `status: draft` when first created.
+- Set `status: review` when the spec is circulated for sign-off but has not yet shipped.
+- Set `status: implemented`, `implemented: true`, and `implemented_at` to today's ISO date when the feature ships.
+- **When updating a spec that already has `implemented: true`:** stop, warn the user that the spec is marked as implemented, and require them to explicitly describe what has drifted before making any edits. Record each acknowledged change as an entry in `drift` (with an ISO date and short description) and set `status: drifted`. Never silently edit an implemented spec.
+
+Example of a post-implementation drift entry:
+
+```yaml
+drift:
+  - date: 2026-08-02
+    description: Added edge case — empty state now shows an onboarding prompt instead of a blank panel.
+  - date: 2026-09-10
+    description: Error message wording changed per UX review.
+```
+
 ## The Behavior section
 
 Behavior is the spec. Everything else is framing.
@@ -102,6 +130,11 @@ If you find yourself writing the same idea in Summary, Problem, Goals, and Behav
 ## Keep the spec current
 
 Approved specs may ship in the same PR as the implementation. As implementation evolves, update `PRODUCT.md` in the same PR when user-facing behavior or UX details change. The checked-in spec should describe the feature that actually ships.
+
+Before editing any existing `PRODUCT.md`, read its frontmatter:
+
+- If `implemented: false` — edit freely; update `status` as the spec progresses toward review and shipping.
+- If `implemented: true` — **do not edit silently.** Warn the user that the spec is already marked implemented, explain that any change represents drift from the shipped feature, and ask them to confirm and describe what changed. Only proceed once they acknowledge the drift. Then append the acknowledged changes to the `drift` list and set `status: drifted`.
 
 For large features, the implementer may optionally keep a `DECISIONS.md` file summarizing concrete decisions made during design and implementation. Offer it when it would help future agents; otherwise skip it.
 
